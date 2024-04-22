@@ -33,7 +33,8 @@ cd /home/ec2-user/Sentimental-Analysis/Compute
 python3 server.py
 EOF
 ```
-- Set the Load Balancer Redirect HTTP traffic from port 80 to port 5000 to /analyze_tweets
+- Set the Load Balancer Redirect HTTP traffic from port 80 to port 5000 
+- You can change Healthy checks to check on /analyze_tweets and wait for 405 response
 - In Auto Scaling group set the instance type of c5a.large
 
 
