@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 import boto3
 from boto3.dynamodb.conditions import Attr
-# Route that returns the 'word' parameter
+import requests
+
 # Initialize DynamoDB resource with a specific region
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
-# Name of your DynamoDB table
 table_name = "tweet-politics"
 
 app = Flask(__name__)
@@ -62,16 +62,38 @@ def user_route():
         # Return an error message if something goes wrong
         return jsonify({"error": str(e)}), 500
 
-# Route that performs a basic analysis on the 'word' parameter
 @app.route('/analysis', methods=['GET'])
 def analysis_route():
-    word = request.args.get('word')  # Get the 'word' parameter
-    if word:
-        # Simple analysis on the word (in this case, just its length)
-        analysis_result = {"length": len(word)}
-        return jsonify({"analysis": analysis_result})
-    else:
+    word = request.args.get('word')  # Récupérer le paramètre 'word'
+    if not word:
         return jsonify({"error": "The 'word' parameter is required"}), 400
+
+    try:
+        table = dynamodb.Table(table_name)
+
+        response = table.scan(
+            FilterExpression=Attr('text').contains(word)
+        )
+
+        items = response.get('Items', [])
+
+        if not items:
+            return jsonify({"error": "No tweets found with the given word"}), 404
+
+        analyze_endpoint = "http://internal-Compute-Load-Balancer-1877743732.us-east-1.elb.amazonaws.com/analyze_tweets"
+
+        analyze_response = requests.post(analyze_endpoint, json=items)  # Envoi des tweets pour analyse
+
+        if analyze_response.status_code != 200:
+            return jsonify({"error": "Failed to analyze tweets"}), 500
+
+
+        analysis_results = analyze_response.json()
+        return jsonify({"analysis": analysis_results}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # Start the Flask server
 if __name__ == '__main__':
