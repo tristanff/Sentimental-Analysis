@@ -3,7 +3,7 @@
 - Create a S3 bucket 
 - upload the file merged_data.csv that you will find on this repo
 - In DynamoDB use import from S3 feature , from CSV , let the default parameters for import and put subject as primary key
-
+- The table name should be : tweet-politics
 
 ### Create AMI Compute Custom Image
 
