@@ -88,7 +88,7 @@ with the endpoint of your Load Balancer DNS name
 cd Sentimental-Analysis/Back-End
 python3 server.py
 ```
-You might need to change manually in the code the dns name of the load balancer
+
 
 ### Test the the BackEnd Server
 ```
