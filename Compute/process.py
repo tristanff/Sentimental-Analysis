@@ -3,7 +3,7 @@ import requests
 from pysentimiento import create_analyzer
 
 # Create sentiment analyzer
-#analyzer = create_analyzer(task="sentiment", lang="en")
+analyzer = create_analyzer(task="sentiment", lang="en")
 
 api_url = os.getenv("API_URL")
 print(f"api_url: {api_url}\n")
