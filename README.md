@@ -20,6 +20,10 @@ pip install flask
 pip install pysentimiento
 git clone https://github.com/tristanff/Sentimental-Analysis
 ```
+- Test the compute server by sending the following http request
+```bash
+  curl -X POST -H "Content-Type: application/json" -d '[{"sentiment": "neutral", "text": "#2Abril Van 37 días de invasión rusa en #Ucrania, 37 días de guerra, destrucción, dolor, desplazados, muerte, y tod… https://t.co/e2DcggQgpL", "user": "PioVona", "subject": "StopTheWar"}, {"sentiment": "positive", "text": "#Anonymous, guys, it would be nice to make the locations of the #Russian #Navy open. How do you like this idea?… https://t.co/Q0AT14BpHx", "user": "ComicsGram", "subject": "russian navy"}, {"sentiment": "negative", "text": "#BREAKING #Anonymous hacks Russian Orthodox Church & Lipetsk Company.\n\n#Russia #RussianArmy\n#RussiaUkraineConflict… https://t.co/VS8LB8j5jx", "user": "Internl_Leaks", "subject": "russianarmy"}]' http://{EC2-PublicIP}:5000/analyze_tweets
+```
 - On EC2 Console , click on the Instance , go to Actions , create Image
 - Verify that the Image has been correctly genererated.
 ## Create Load Balancer with Auto Scalling Groups using Spot Instances 
