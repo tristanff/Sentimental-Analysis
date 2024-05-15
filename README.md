@@ -104,5 +104,28 @@ curl -X GET "http://{InstanceIP}/user?username=LMaledetta"
 curl -X GET "http://{BackEnd-PublicIP}:5000/analysis?word=ukraine"
 ```
 
+## Configure Compute Task Running
+
+### 1.) Build the image and Config container Registry
+
+In order to give our cluster a base Image that will be used to compute the data and make the analysis we need to build an Image using docker , and store it on container Registry.
+
+## A) Create container Registry
+
+In ECR Service on AWS Console , create the container registry _sentimental-analysis_
+
+## B) Build and push Image 
+Configure aws cli on your local machine so it has access to the lab (see Configure AWS CLI part)
+
+In ECR Service , click on view push commands.
+
+On your local machine , go the driectory where our Dockerfile is stored and copy past all commands
+
+Verify that the image is in the repository
+
+## 2.) Create Cluster and configure tasks 
+
+
+
 
 

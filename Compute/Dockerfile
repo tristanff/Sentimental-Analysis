@@ -12,4 +12,4 @@ RUN git clone https://github.com/tristanff/Sentimental-Analysis
 WORKDIR /Sentimental-Analysis/Compute
 
 # Exécuter le script Python
-CMD ["python3", "server.py"]
+CMD ["python3", "process.py"]
