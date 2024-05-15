@@ -12,4 +12,5 @@ RUN git clone https://github.com/tristanff/Sentimental-Analysis
 WORKDIR /Sentimental-Analysis/Compute
 
 # Exécuter le script Python
+CMD ["git","pull"]
 CMD ["python3", "process.py"]
