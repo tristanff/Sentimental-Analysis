@@ -8,9 +8,11 @@ RUN pip install flask pysentimiento
 # Cloner le dépôt Git
 RUN git clone https://github.com/tristanff/Sentimental-Analysis
 
+
+
 # Définir le répertoire de travail
 WORKDIR /Sentimental-Analysis/Compute
 
-# Exécuter le script Python
-CMD ["git","pull"]
+RUN git pull
+
 CMD ["python3", "process.py"]
