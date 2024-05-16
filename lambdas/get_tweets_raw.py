@@ -1,5 +1,6 @@
 import json
 import boto3
+from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource('dynamodb')
 table_name = 'tweets-raw'
@@ -18,7 +19,7 @@ def lambda_handler(event, context):
         # Return the items in JSON format
         return {
             "statusCode": 200,
-            "body": json.dumps({"results": items})
+            "body": json.dumps( items)
         }
     except Exception as e:
         # Return an error message if something goes wrong
