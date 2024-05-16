@@ -104,9 +104,17 @@ curl -X GET "http://{InstanceIP}/user?username=LMaledetta"
 curl -X GET "http://{BackEnd-PublicIP}:5000/analysis?word=ukraine"
 ```
 
+## Create DB
+Create a new DynamoDb called tweets-raw with PK id and SK subject and let it empty.
+## Configure API and Lambdas
+1.) Create all lambdas functions and copy paste the code you will find in lambdas for all 4 functions
+2.) Create and API Gateway with every endpoint u can find in postman collections
+3.) Associate the endpoints with lambdas
+4.) Import the postman_collection to PostMan test to : add a tweet , get raw_tweets and copy the response body, paste it into to the update_db body and verify that the tweets were deleted from tweets-raw db and added tweets-processed.
+
 ## Configure Compute Task Running
 
-### 1.) Build the image and Config container Registry
+### 2.) Build the image and Config container Registry
 
 In order to give our cluster a base Image that will be used to compute the data and make the analysis we need to build an Image using docker , and store it on container Registry.
 
@@ -117,13 +125,27 @@ In ECR Service on AWS Console , create the container registry _sentimental-analy
 ## B) Build and push Image 
 Configure aws cli on your local machine so it has access to the lab (see Configure AWS CLI part)
 
+In the DockerFile change API_URL env variable with ur own api endpoint url.
+
 In ECR Service , click on view push commands.
 
 On your local machine , go the driectory where our Dockerfile is stored and copy past all commands
 
+( Building and pushing the image will take a long time , have a coffee)
+
 Verify that the image is in the repository
 
 ## 2.) Create Cluster and configure tasks 
+
+Create a cluster
+
+Create a task defintion with Fargate , LabRole, 4 CPUs and 8Gb of memory. Copy paste the IMAGE URI your ECR and save.
+
+Using Postman add new tweets to the DB so you can test the task.
+
+Go to your clusters , tasks, run new task and in family choose the task definition u created.
+
+Check in tweets in tweets-raw db were moved to tweets-processed.
 
 
 
