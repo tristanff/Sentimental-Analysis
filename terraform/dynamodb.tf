@@ -12,16 +12,7 @@ resource "aws_dynamodb_table" "tweets_raw" {
     name = "subject"
     type = "S"
   }
-  attribute {
-    name = "user"
-    type = "S"
-  }
-  attribute {
-    name = "text"
-    type = "S"
-  }
 }
-
 
 resource "aws_dynamodb_table" "tweets_processed" {
   name           = "tweets-processed"
@@ -36,16 +27,7 @@ resource "aws_dynamodb_table" "tweets_processed" {
     name = "subject"
     type = "S"
   }
-  attribute {
-    name = "user"
-    type = "S"
-  }
-  attribute {
-    name = "text"
-    type = "S"
-  }
-  attribute {
-    name = "sentiment"
-    type = "S"
-  }
 }
+
+
+
