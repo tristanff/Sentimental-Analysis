@@ -5,21 +5,21 @@ import uuid
 dynamodb = boto3.resource('dynamodb')
 table_name = 'tweets-raw'
 
+
 def lambda_handler(event, context):
     try:
-        body = json.loads(event['body'])
 
         tweet_id = str(uuid.uuid4())
+        event_body = json.loads(event['body'])
 
-        user = body.get('user')
-        text = body.get('text')
-        subject = body.get('subject')
-
+        subject = event_body['subject']
+        user = event_body['user']
+        text = event_body['text']
 
         if not (user and text and subject):
             return {
                 "statusCode": 400,
-                "body": json.dumps({"error": "Missing required fields: 'user', 'text', or 'subject'"})
+                "body": json.dumps(event)
             }
 
         table = dynamodb.Table(table_name)

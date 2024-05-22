@@ -11,25 +11,8 @@ def lambda_handler(event, context):
         # Access the source table
         source_table = dynamodb.Table(source_table_name)
 
-        # Check if the event contains a body
-        if 'body' not in event:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "Event body is empty"})
-            }
-
-        # Parse the body as JSON
-        body = json.loads(event['body'])
-
-        # Check if the body contains tweets
-        if not body:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "No tweets found in the request body"})
-            }
-
-        # Access the list of tweets from the body
-        tweets = body
+        # Load tweets from the body of the event
+        tweets = json.loads(event['body'])
 
         # Delete each item from the source table
         for tweet in tweets:
@@ -53,3 +36,4 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps({"error": str(e)})
         }
+

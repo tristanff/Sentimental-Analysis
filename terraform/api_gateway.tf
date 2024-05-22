@@ -9,10 +9,11 @@ resource "aws_api_gateway_rest_api" "sentimental_api" {
   minimum_compression_size = 1024
 }
 
+
 resource "aws_api_gateway_resource" "consult_db_resource" {
   rest_api_id = aws_api_gateway_rest_api.sentimental_api.id
   parent_id   = aws_api_gateway_rest_api.sentimental_api.root_resource_id
-  path_part   = "consult-db"
+  path_part   = "consult_db"
 }
 
 resource "aws_api_gateway_resource" "tweets_raw_resource" {
@@ -61,11 +62,37 @@ resource "aws_api_gateway_method" "update_db_method" {
   authorization = "NONE"
 }
 
+data "archive_file" "consult_db_lambda" {
+  type        = "zip"
+  source_file  = "../lambdas/consult_db.py"
+  output_path = "../lambdas/consult_db.zip"
+}
+
+data "archive_file" "tweets_raw_lambda" {
+  type        = "zip"
+  source_file  = "../lambdas/tweets_raw.py"
+  output_path = "../lambdas/tweets_raw.zip"
+}
+
+
+data "archive_file" "add_tweet_lambda" {
+  type        = "zip"
+  source_file  = "../lambdas/add_tweet.py"
+  output_path = "../lambdas/add_tweet.zip"
+}
+
+data "archive_file" "update_db_lambda" {
+  type        = "zip"
+  source_file  = "../lambdas/update_db.py"
+  output_path = "../lambdas/update_db.zip"
+}
+
+
 resource "aws_api_gateway_integration" "consult_db_integration" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
   resource_id             = aws_api_gateway_resource.consult_db_resource.id
   http_method             = aws_api_gateway_method.consult_db_method.http_method
-  integration_http_method = "POST"
+  integration_http_method = "GET"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.consult_db_lambda.invoke_arn
 }
@@ -74,7 +101,7 @@ resource "aws_api_gateway_integration" "tweets_raw_integration" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
   resource_id             = aws_api_gateway_resource.tweets_raw_resource.id
   http_method             = aws_api_gateway_method.tweets_raw_method.http_method
-  integration_http_method = "POST"
+  integration_http_method = "GET"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.tweets_raw_lambda.invoke_arn
 }
@@ -98,43 +125,80 @@ resource "aws_api_gateway_integration" "update_db_integration" {
 }
 
 resource "aws_lambda_function" "consult_db_lambda" {
-  filename         = "../lambdas/get_tweets_from_word.zip"
-  function_name    = "get_tweets_from_word"
+  filename         = "../lambdas/consult_db.zip"
+  function_name    = "consult_db"
   role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "consult-db.handler"
+  handler          = "consult_db.lambda_handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "tweets_raw_lambda" {
-  filename         = "../lambdas/get_tweets_raw.zip"
-  function_name    = "tweets-raw-lambda"
+  filename         = "../lambdas/tweets_raw.zip"
+  function_name    = "tweets_raw"
   role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "tweets-raw.handler"
+  handler          = "tweets_raw.lambda_handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "add_tweet_lambda" {
   filename         = "../lambdas/add_tweet.zip"
-  function_name    = "add-tweet-lambda"
+  function_name    = "add_tweet"
   role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "add-tweet.handler"
+  handler          = "add_tweet.lambda_handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "update_db_lambda" {
   filename         = "../lambdas/update_db.zip"
-  function_name    = "update-db-lambda"
+  function_name    = "update_db"
   role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "update-db.handler"
+  handler          = "update_db.lambda_handler"
   runtime          = "python3.8"
+}
+
+resource "aws_api_gateway_deployment" "sentimental_api_deployment" {
+  depends_on    = [aws_api_gateway_rest_api.sentimental_api]
+  rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
+  stage_name    = "prod"  # Nom de votre stage
+}
+
+resource "aws_lambda_permission" "consult_db_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.consult_db_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/GET/consult_db"
+}
+
+resource "aws_lambda_permission" "tweets_raw_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.tweets_raw_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/GET/tweets_raw"
+}
+
+resource "aws_lambda_permission" "add_tweet_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.add_tweet_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/POST/add_tweet"
+}
+
+resource "aws_lambda_permission" "update_db_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.update_db_lambda.arn
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/POST/update_db"
 }
 
 output "api_gateway_id" {
   value = aws_api_gateway_rest_api.sentimental_api.id
-}
-
-output "api_gateway_url" {
-  value = aws_api_gateway_rest_api.sentimental_api.root_resource_id
 }
 
 output "consult_db_resource_id" {
@@ -152,3 +216,8 @@ output "add_tweet_resource_id" {
 output "update_db_resource_id" {
   value = aws_api_gateway_resource.update_db_resource.id
 }
+
+output "api_gateway_url" {
+  value = "https://${aws_api_gateway_rest_api.sentimental_api.id}.execute-api.us-east-1.amazonaws.com/${aws_api_gateway_deployment.sentimental_api_deployment.stage_name}"
+}
+
