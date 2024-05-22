@@ -147,7 +147,9 @@ Go to your clusters , tasks, run new task and in family choose the task definiti
 
 Check in tweets in tweets-raw db were moved to tweets-processed.
 
+# Terraform
 
+The labrole arn needs to be changed for everybody
 
 
 
