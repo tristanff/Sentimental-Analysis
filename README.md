@@ -151,6 +151,12 @@ Check in tweets in tweets-raw db were moved to tweets-processed.
 
 The labrole arn needs to be changed for everybody
 
+The IMAGE URI need to be changed too 
+
+
+TODO : The API URI is in the DockerFile , we need to move it to the task definition so we can build the image once and change the API URI in the terraform file 
+
+
 
 
 
