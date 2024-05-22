@@ -65,18 +65,18 @@ resource "aws_api_gateway_integration" "consult_db_integration" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
   resource_id             = aws_api_gateway_resource.consult_db_resource.id
   http_method             = aws_api_gateway_method.consult_db_method.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "aws_lambda_function.tweets_raw_lambda.invoke_arn"
+  uri                     = aws_lambda_function.consult_db_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_integration" "tweets_raw_integration" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
   resource_id             = aws_api_gateway_resource.tweets_raw_resource.id
   http_method             = aws_api_gateway_method.tweets_raw_method.http_method
-  integration_http_method = "GET"
+  integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "aws_lambda_function.tweets_raw_lambda.invoke_arn"
+  uri                     = aws_lambda_function.tweets_raw_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_integration" "add_tweet_integration" {
@@ -85,7 +85,7 @@ resource "aws_api_gateway_integration" "add_tweet_integration" {
   http_method             = aws_api_gateway_method.add_tweet_method.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "aws_lambda_function.add_tweet_lambda.invoke_arn"
+  uri                     = aws_lambda_function.add_tweet_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_integration" "update_db_integration" {
@@ -94,37 +94,37 @@ resource "aws_api_gateway_integration" "update_db_integration" {
   http_method             = aws_api_gateway_method.update_db_method.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = "aws_lambda_function.consult_db_lambda.invoke_arn"
+  uri                     = aws_lambda_function.update_db_lambda.invoke_arn
 }
 
 resource "aws_lambda_function" "consult_db_lambda" {
-  filename         = "../lambdas/get_tweets_from_word.py"
+  filename         = "../lambdas/get_tweets_from_word.zip"
   function_name    = "get_tweets_from_word"
-  role             = aws_iam_role.lab_role.arn
+  role             = "arn:aws:iam::052963506097:role/LabRole"
   handler          = "consult-db.handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "tweets_raw_lambda" {
-  filename         = "../lambdas/get_tweets_raw.py"
+  filename         = "../lambdas/get_tweets_raw.zip"
   function_name    = "tweets-raw-lambda"
-  role             = aws_iam_role.lab_role.arn
+  role             = "arn:aws:iam::052963506097:role/LabRole"
   handler          = "tweets-raw.handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "add_tweet_lambda" {
-  filename         = "../lambdas/add_tweet.py"
+  filename         = "../lambdas/add_tweet.zip"
   function_name    = "add-tweet-lambda"
-  role             = aws_iam_role.lab_role.arn
+  role             = "arn:aws:iam::052963506097:role/LabRole"
   handler          = "add-tweet.handler"
   runtime          = "python3.8"
 }
 
 resource "aws_lambda_function" "update_db_lambda" {
-  filename         = "../lambdas/update-db.py"
+  filename         = "../lambdas/update_db.zip"
   function_name    = "update-db-lambda"
-  role             = aws_iam_role.lab_role.arn
+  role             = "arn:aws:iam::052963506097:role/LabRole"
   handler          = "update-db.handler"
   runtime          = "python3.8"
 }
@@ -152,4 +152,3 @@ output "add_tweet_resource_id" {
 output "update_db_resource_id" {
   value = aws_api_gateway_resource.update_db_resource.id
 }
-
