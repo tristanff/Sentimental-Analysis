@@ -149,12 +149,15 @@ Check in tweets in tweets-raw db were moved to tweets-processed.
 
 # Terraform
 
-The labrole arn needs to be changed for everybody
+You need to change both the lab role arn and the container image url, for that, create a new file under the `terraform` folder called `terraform.tfvars` and input the data, it should look like this:
+```
+lab_role_arn        = "arn:aws:iam::<id>:role/LabRole"
+container_image_url = "<id>.dkr.ecr.us-east-1.amazonaws.com/sentimental-analysis:latest"
+```
+where the id is relevant to your aws account
 
-The IMAGE URI need to be changed too 
 
-
-TODO : The API URI is in the DockerFile , we need to move it to the task definition so we can build the image once and change the API URI in the terraform file 
+~~ TODO : The API URI is in the DockerFile , we need to move it to the task definition so we can build the image once and change the API URI in the terraform file ~~
 
 
 
