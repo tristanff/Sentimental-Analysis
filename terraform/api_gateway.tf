@@ -64,26 +64,26 @@ resource "aws_api_gateway_method" "update_db_method" {
 
 data "archive_file" "consult_db_lambda" {
   type        = "zip"
-  source_file  = "../lambdas/consult_db.py"
+  source_file = "../lambdas/consult_db.py"
   output_path = "../lambdas/consult_db.zip"
 }
 
 data "archive_file" "tweets_raw_lambda" {
   type        = "zip"
-  source_file  = "../lambdas/tweets_raw.py"
+  source_file = "../lambdas/tweets_raw.py"
   output_path = "../lambdas/tweets_raw.zip"
 }
 
 
 data "archive_file" "add_tweet_lambda" {
   type        = "zip"
-  source_file  = "../lambdas/add_tweet.py"
+  source_file = "../lambdas/add_tweet.py"
   output_path = "../lambdas/add_tweet.zip"
 }
 
 data "archive_file" "update_db_lambda" {
   type        = "zip"
-  source_file  = "../lambdas/update_db.py"
+  source_file = "../lambdas/update_db.py"
   output_path = "../lambdas/update_db.zip"
 }
 
@@ -125,41 +125,41 @@ resource "aws_api_gateway_integration" "update_db_integration" {
 }
 
 resource "aws_lambda_function" "consult_db_lambda" {
-  filename         = "../lambdas/consult_db.zip"
-  function_name    = "consult_db"
-  role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "consult_db.lambda_handler"
-  runtime          = "python3.8"
+  filename      = "../lambdas/consult_db.zip"
+  function_name = "consult_db"
+  role          = var.lab_role_arn
+  handler       = "consult_db.lambda_handler"
+  runtime       = "python3.8"
 }
 
 resource "aws_lambda_function" "tweets_raw_lambda" {
-  filename         = "../lambdas/tweets_raw.zip"
-  function_name    = "tweets_raw"
-  role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "tweets_raw.lambda_handler"
-  runtime          = "python3.8"
+  filename      = "../lambdas/tweets_raw.zip"
+  function_name = "tweets_raw"
+  role          = var.lab_role_arn
+  handler       = "tweets_raw.lambda_handler"
+  runtime       = "python3.8"
 }
 
 resource "aws_lambda_function" "add_tweet_lambda" {
-  filename         = "../lambdas/add_tweet.zip"
-  function_name    = "add_tweet"
-  role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "add_tweet.lambda_handler"
-  runtime          = "python3.8"
+  filename      = "../lambdas/add_tweet.zip"
+  function_name = "add_tweet"
+  role          = var.lab_role_arn
+  handler       = "add_tweet.lambda_handler"
+  runtime       = "python3.8"
 }
 
 resource "aws_lambda_function" "update_db_lambda" {
-  filename         = "../lambdas/update_db.zip"
-  function_name    = "update_db"
-  role             = "arn:aws:iam::052963506097:role/LabRole"
-  handler          = "update_db.lambda_handler"
-  runtime          = "python3.8"
+  filename      = "../lambdas/update_db.zip"
+  function_name = "update_db"
+  role          = var.lab_role_arn
+  handler       = "update_db.lambda_handler"
+  runtime       = "python3.8"
 }
 
 resource "aws_api_gateway_deployment" "sentimental_api_deployment" {
-  depends_on    = [aws_api_gateway_rest_api.sentimental_api]
-  rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
-  stage_name    = "prod"  # Nom de votre stage
+  depends_on  = [aws_api_gateway_rest_api.sentimental_api, aws_api_gateway_integration.add_tweet_integration, aws_api_gateway_integration.consult_db_integration, aws_api_gateway_integration.tweets_raw_integration, aws_api_gateway_integration.update_db_integration]
+  rest_api_id = aws_api_gateway_rest_api.sentimental_api.id
+  stage_name  = "prod" # Nom de votre stage
 }
 
 resource "aws_lambda_permission" "consult_db_permission" {
@@ -167,7 +167,7 @@ resource "aws_lambda_permission" "consult_db_permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.consult_db_lambda.arn
   principal     = "apigateway.amazonaws.com"
-  source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/GET/consult_db"
+  source_arn    = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/GET/consult_db"
 }
 
 resource "aws_lambda_permission" "tweets_raw_permission" {
@@ -220,4 +220,3 @@ output "update_db_resource_id" {
 output "api_gateway_url" {
   value = "https://${aws_api_gateway_rest_api.sentimental_api.id}.execute-api.us-east-1.amazonaws.com/${aws_api_gateway_deployment.sentimental_api_deployment.stage_name}"
 }
-

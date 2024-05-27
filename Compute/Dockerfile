@@ -15,7 +15,6 @@ COPY . /Sentimental-Analysis/Compute
 
 # Définir le répertoire de travail
 WORKDIR /Sentimental-Analysis/Compute
-ENV API_URL https://95w8sc9vl2.execute-api.us-east-1.amazonaws.com
 # Exécuter le script Python
 CMD ["python3", "process.py"]
 
