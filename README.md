@@ -153,11 +153,15 @@ You need to change both the lab role arn and the container image url, for that, 
 ```
 lab_role_arn        = "arn:aws:iam::<id>:role/LabRole"
 container_image_url = "<id>.dkr.ecr.us-east-1.amazonaws.com/sentimental-analysis:latest"
+aws_region          = "us-east-1"
+vpc_name            = "CC-2024Q1-G2"
+vpc_cidr            = "10.0.0.0/16"
+public_cidr         = "10.0.1.0/24"
+public_az           = "us-east-1a"
+table_names         = ["tweets-raw", "tweets-processed"]
+db_billing_mode     = "PAY_PER_REQUEST"
 ```
-where the id is relevant to your aws account
-
-
-~~ TODO : The API URI is in the DockerFile , we need to move it to the task definition so we can build the image once and change the API URI in the terraform file ~~
+where the id is relevant to your aws account, the remaining parameters can be modified according to your likings/aws limitations
 
 
 
