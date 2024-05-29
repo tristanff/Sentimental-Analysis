@@ -19,14 +19,15 @@ module "security" {
 }
 
 module "application" {
-  source       = "./modules/application"
-  lab_role_arn = var.lab_role_arn
+  source     = "./modules/application"
+  account_id = var.account_id
+  region     = var.aws_region
 }
 
 module "compute" {
-  source              = "./modules/compute"
-  lab_role_arn        = var.lab_role_arn
-  api_gateway_url     = module.application.api_gateway_url
-  container_image_url = var.container_image_url
-  subnet_ids          = [module.network.public_subnet_id]
+  source          = "./modules/compute"
+  account_id      = var.account_id
+  region          = var.aws_region
+  api_gateway_url = module.application.api_gateway_url
+  subnet_ids      = [module.network.public_subnet_id]
 }

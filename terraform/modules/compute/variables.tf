@@ -1,10 +1,5 @@
-variable "lab_role_arn" {
-  description = "ARN of your lab role"
-  type        = string
-  default     = ""
-}
-variable "container_image_url" {
-  description = "The url of the compute containter image"
+variable "account_id" {
+  description = "ID of your AWS account"
   type        = string
   default     = ""
 }
@@ -17,5 +12,8 @@ variable "subnet_ids" {
   description = "IDs of subnets"
   type        = list(string)
   default     = []
-
+}
+variable "region" {
+  description = "Region of your deployed architecture"
+  type        = string
 }

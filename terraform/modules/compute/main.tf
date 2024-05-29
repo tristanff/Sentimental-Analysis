@@ -9,14 +9,14 @@ resource "aws_ecs_cluster" "compute_cluster" {
 resource "aws_ecs_task_definition" "process_raw_tweets" {
   family             = "process-raw-tweets"
   network_mode       = "awsvpc"
-  execution_role_arn = var.lab_role_arn
-  task_role_arn      = var.lab_role_arn
+  execution_role_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
+  task_role_arn      = "arn:aws:iam::${var.account_id}:role/LabRole"
   cpu                = "4096"
   memory             = "8192"
   container_definitions = jsonencode([
     {
       name        = "compute-instance"
-      image       = var.container_image_url
+      image       = "${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/sentimental-analysis:latest"
       cpu         = 4096
       memory      = 8192
       essential   = true
@@ -38,11 +38,11 @@ resource "aws_scheduler_schedule" "cron" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(0 0 * * *)"
+  schedule_expression = "cron(0 0/8 * * ? *)"
 
   target {
-    arn = aws_ecs_cluster.compute_cluster.arn 
-    role_arn = var.lab_role_arn
+    arn      = aws_ecs_cluster.compute_cluster.arn
+    role_arn = "arn:aws:iam::${var.account_id}:role/LabRole"
 
     ecs_parameters {
       # trimming the revision suffix here so that schedule always uses latest revision

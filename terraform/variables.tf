@@ -33,13 +33,8 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
-variable "lab_role_arn" {
-  description = "ARN of your lab role"
-  type        = string
-  default     = ""
-}
-variable "container_image_url" {
-  description = "The url of the compute containter image"
+variable "account_id" {
+  description = "ID of your AWS account"
   type        = string
   default     = ""
 }
