@@ -47,9 +47,9 @@ No modules.
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_lab_role_arn"></a> [lab\_role\_arn](#input\_lab\_role\_arn) | ARN of your lab role | `string` | `""` | no |
+| Name | Description | Type | Default |
+|------|-------------|------|---------|
+| <a name="input_lab_role_arn"></a> [lab\_role\_arn](#input\_lab\_role\_arn) | ARN of your lab role | `string` | `""` |
 
 ## Outputs
 

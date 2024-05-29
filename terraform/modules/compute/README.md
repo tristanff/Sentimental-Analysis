@@ -22,11 +22,11 @@ No modules.
 
 ## Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_api_gateway_url"></a> [api\_gateway\_url](#input\_api\_gateway\_url) | URL to invoke the API pointing to the stage | `string` | `""` | no |
-| <a name="input_container_image_url"></a> [container\_image\_url](#input\_container\_image\_url) | The url of the compute containter image | `string` | `""` | no |
-| <a name="input_lab_role_arn"></a> [lab\_role\_arn](#input\_lab\_role\_arn) | ARN of your lab role | `string` | `""` | no |
+| Name | Description | Type | Default |
+|------|-------------|------|---------|
+| <a name="input_api_gateway_url"></a> [api\_gateway\_url](#input\_api\_gateway\_url) | URL to invoke the API pointing to the stage | `string` | `""` |
+| <a name="input_container_image_url"></a> [container\_image\_url](#input\_container\_image\_url) | The url of the compute containter image | `string` | `""` |
+| <a name="input_lab_role_arn"></a> [lab\_role\_arn](#input\_lab\_role\_arn) | ARN of your lab role | `string` | `""` |
 
 ## Outputs
 
