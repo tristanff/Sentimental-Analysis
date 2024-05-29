@@ -13,3 +13,9 @@ variable "api_gateway_url" {
   type        = string
   default     = ""
 }
+variable "subnet_ids" {
+  description = "IDs of subnets"
+  type        = list(string)
+  default     = []
+
+}

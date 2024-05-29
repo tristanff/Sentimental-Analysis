@@ -28,4 +28,5 @@ module "compute" {
   lab_role_arn        = var.lab_role_arn
   api_gateway_url     = module.application.api_gateway_url
   container_image_url = var.container_image_url
+  subnet_ids          = [module.network.public_subnet_id]
 }
