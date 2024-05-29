@@ -163,6 +163,18 @@ db_billing_mode     = "PAY_PER_REQUEST"
 ```
 where the id is relevant to your aws account, the remaining parameters can be modified according to your likings/aws limitations
 
+Get the labrole arn :
+
+```
+aws iam list-roles --query "Roles[?RoleName=='LabRole'].Arn" --output text
+
+```
+
+Get the image url :
+```
+aws ecr describe-repositories --query "repositories[?repositoryUri!=''].repositoryUri" --output text
+```
+
 
 
 

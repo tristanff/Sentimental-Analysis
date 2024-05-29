@@ -175,7 +175,6 @@ resource "aws_lambda_permission" "tweets_raw_permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.tweets_raw_lambda.arn
   principal     = "apigateway.amazonaws.com"
-
   source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/GET/tweets_raw"
 }
 
@@ -184,7 +183,6 @@ resource "aws_lambda_permission" "add_tweet_permission" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.add_tweet_lambda.arn
   principal     = "apigateway.amazonaws.com"
-
   source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/POST/add_tweet"
 }
 

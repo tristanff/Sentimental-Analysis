@@ -38,7 +38,7 @@ resource "aws_scheduler_schedule" "cron" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(0 0 * * *)"
+  schedule_expression = "cron(0 0 * * ? *)"
 
   target {
     arn = aws_ecs_cluster.compute_cluster.arn 
