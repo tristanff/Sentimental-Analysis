@@ -1,6 +1,6 @@
 resource "aws_api_gateway_rest_api" "sentimental_api" {
-  name        = "sentimentalAnalysis-API"
-  description = "API for sentimental analysis"
+  name        = "sentimental-analysis-api-gw"
+  description = "Sentimental analysis API"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -157,9 +157,9 @@ resource "aws_lambda_function" "update_db_lambda" {
 }
 
 resource "aws_api_gateway_deployment" "sentimental_api_deployment" {
-  depends_on  = [aws_api_gateway_rest_api.sentimental_api, aws_api_gateway_integration.add_tweet_integration, aws_api_gateway_integration.consult_db_integration, aws_api_gateway_integration.tweets_raw_integration, aws_api_gateway_integration.update_db_integration]
+  depends_on  = [aws_api_gateway_integration.add_tweet_integration, aws_api_gateway_integration.consult_db_integration, aws_api_gateway_integration.tweets_raw_integration, aws_api_gateway_integration.update_db_integration]
   rest_api_id = aws_api_gateway_rest_api.sentimental_api.id
-  stage_name  = "prod" # Nom de votre stage
+  stage_name  = "prod"
 }
 
 resource "aws_lambda_permission" "consult_db_permission" {
@@ -195,28 +195,4 @@ resource "aws_lambda_permission" "update_db_permission" {
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.sentimental_api.execution_arn}/*/POST/update_db"
-}
-
-output "api_gateway_id" {
-  value = aws_api_gateway_rest_api.sentimental_api.id
-}
-
-output "consult_db_resource_id" {
-  value = aws_api_gateway_resource.consult_db_resource.id
-}
-
-output "tweets_raw_resource_id" {
-  value = aws_api_gateway_resource.tweets_raw_resource.id
-}
-
-output "add_tweet_resource_id" {
-  value = aws_api_gateway_resource.add_tweet_resource.id
-}
-
-output "update_db_resource_id" {
-  value = aws_api_gateway_resource.update_db_resource.id
-}
-
-output "api_gateway_url" {
-  value = "https://${aws_api_gateway_rest_api.sentimental_api.id}.execute-api.us-east-1.amazonaws.com/${aws_api_gateway_deployment.sentimental_api_deployment.stage_name}"
 }
