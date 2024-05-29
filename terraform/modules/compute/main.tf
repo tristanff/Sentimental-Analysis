@@ -20,7 +20,6 @@ resource "aws_ecs_task_definition" "process_raw_tweets" {
       cpu         = 4096
       memory      = 8192
       essential   = true
-      command     = ["python3", "process.py"]
       environment = [{ name : "API_URL", value : var.api_gateway_url }]
     }
   ])
