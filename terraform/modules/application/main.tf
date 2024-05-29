@@ -1,3 +1,4 @@
+# tweets_raw lambda
 data "archive_file" "tweets_raw" {
   type        = "zip"
   source_file = "../lambdas/tweets_raw.py"
@@ -11,6 +12,7 @@ resource "aws_lambda_function" "tweets_raw" {
   runtime       = "python3.8"
 }
 
+# consult_db lambda
 data "archive_file" "consult_db" {
   type        = "zip"
   source_file = "../lambdas/consult_db.py"
@@ -24,6 +26,7 @@ resource "aws_lambda_function" "consult_db" {
   runtime       = "python3.8"
 }
 
+# add_tweet lambda
 data "archive_file" "add_tweet" {
   type        = "zip"
   source_file = "../lambdas/add_tweet.py"
@@ -37,6 +40,7 @@ resource "aws_lambda_function" "add_tweet" {
   runtime       = "python3.8"
 }
 
+# update_db lambda
 data "archive_file" "update_db" {
   type        = "zip"
   source_file = "../lambdas/update_db.py"
@@ -50,6 +54,7 @@ resource "aws_lambda_function" "update_db" {
   runtime       = "python3.8"
 }
 
+# API definition
 resource "aws_api_gateway_rest_api" "sentimental_api" {
   name = "sentimental-analysis-api-gw"
 }
@@ -166,20 +171,28 @@ resource "aws_lambda_permission" "update_db" {
   source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.sentimental_api.id}/*/${aws_api_gateway_method.update_db.http_method}${aws_api_gateway_resource.update_db.path}"
 }
 
-
+# Deployment definition
 resource "aws_api_gateway_deployment" "sentimental_api" {
   rest_api_id = aws_api_gateway_rest_api.sentimental_api.id
-  # triggers = {
-  #   redeployment = sha1(jsonencode(aws_api_gateway_rest_api.sentimental_api.body))
-  # }
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_method.tweets_raw, aws_api_gateway_integration.tweets_raw, aws_api_gateway_resource.tweets_raw,
+      aws_api_gateway_method.consult_db, aws_api_gateway_integration.consult_db, aws_api_gateway_resource.consult_db,
+      aws_api_gateway_method.add_tweet, aws_api_gateway_integration.add_tweet, aws_api_gateway_resource.add_tweet,
+      aws_api_gateway_method.update_db, aws_api_gateway_integration.update_db, aws_api_gateway_resource.update_db
+    ]))
+  }
+
   lifecycle {
     create_before_destroy = true
   }
+
   depends_on = [
-    aws_api_gateway_method.tweets_raw, aws_api_gateway_integration.tweets_raw, 
-    aws_api_gateway_method.consult_db, aws_api_gateway_integration.consult_db, 
-    aws_api_gateway_method.add_tweet, aws_api_gateway_integration.add_tweet, 
-    aws_api_gateway_method.update_db, aws_api_gateway_integration.update_db]
+    aws_api_gateway_method.tweets_raw, aws_api_gateway_integration.tweets_raw,
+    aws_api_gateway_method.consult_db, aws_api_gateway_integration.consult_db,
+    aws_api_gateway_method.add_tweet, aws_api_gateway_integration.add_tweet,
+    aws_api_gateway_method.update_db, aws_api_gateway_integration.update_db
+  ]
 }
 
 resource "aws_api_gateway_stage" "sentimental_api" {
