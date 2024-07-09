@@ -5,13 +5,16 @@ data "archive_file" "tweets_raw" {
   output_path = "../lambdas/tweets_raw.zip"
 }
 resource "aws_lambda_function" "tweets_raw" {
-  filename      = "../lambdas/tweets_raw.zip"
-  function_name = "tweets_raw"
-  role          = "arn:aws:iam::${var.account_id}:role/LabRole"
-  handler       = "tweets_raw.lambda_handler"
-  runtime       = "python3.8"
+  filename         = "../lambdas/tweets_raw.zip"
+  function_name    = "tweets_raw"
+  role             = "arn:aws:iam::${var.account_id}:role/LabRole"
+  handler          = "tweets_raw.lambda_handler"
+  runtime          = "python3.8"
+  vpc_config {
+    subnet_ids         = [var.private_subnet_id]
+    security_group_ids = [var.lambda_sg]
+  }
 }
-
 # consult_db lambda
 data "archive_file" "consult_db" {
   type        = "zip"
@@ -24,6 +27,10 @@ resource "aws_lambda_function" "consult_db" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "consult_db.lambda_handler"
   runtime       = "python3.8"
+    vpc_config {
+    subnet_ids         = [var.private_subnet_id]
+    security_group_ids = [var.lambda_sg]
+  }
 }
 
 # add_tweet lambda
@@ -38,6 +45,10 @@ resource "aws_lambda_function" "add_tweet" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "add_tweet.lambda_handler"
   runtime       = "python3.8"
+    vpc_config {
+    subnet_ids         = [var.private_subnet_id]
+    security_group_ids = [var.lambda_sg]
+  }
 }
 
 # update_db lambda
@@ -52,6 +63,10 @@ resource "aws_lambda_function" "update_db" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "update_db.lambda_handler"
   runtime       = "python3.8"
+    vpc_config {
+    subnet_ids         = [var.private_subnet_id]
+    security_group_ids = [var.lambda_sg]
+  }
 }
 
 # API definition
@@ -79,13 +94,7 @@ resource "aws_api_gateway_integration" "tweets_raw" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.tweets_raw.invoke_arn
 }
-resource "aws_lambda_permission" "tweets_raw" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.tweets_raw.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.sentimental_api.id}/*/${aws_api_gateway_method.tweets_raw.http_method}${aws_api_gateway_resource.tweets_raw.path}"
-}
+
 
 # GET /consult_db endpoint
 resource "aws_api_gateway_resource" "consult_db" {
