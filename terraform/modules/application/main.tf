@@ -1,3 +1,22 @@
+resource "aws_cognito_user_pool" "user_pool" {
+  name = "sa-pool"
+}
+
+resource "aws_cognito_user_pool_domain" "cognito-domain" {
+  domain       = "sentimental-analysis"
+  user_pool_id = aws_cognito_user_pool.user_pool.id
+}
+
+resource "aws_cognito_user_pool_client" "userpool_client" {
+  name                                 = "client"
+  user_pool_id                         = aws_cognito_user_pool.user_pool.id
+  callback_urls                        = ["https://localhost.com"]
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_flows                  = ["implicit"]
+  allowed_oauth_scopes                 = ["email", "openid"]
+  supported_identity_providers         = ["COGNITO"]
+}
+
 # tweets_raw lambda
 data "archive_file" "tweets_raw" {
   type        = "zip"
@@ -5,11 +24,11 @@ data "archive_file" "tweets_raw" {
   output_path = "../lambdas/tweets_raw.zip"
 }
 resource "aws_lambda_function" "tweets_raw" {
-  filename         = "../lambdas/tweets_raw.zip"
-  function_name    = "tweets_raw"
-  role             = "arn:aws:iam::${var.account_id}:role/LabRole"
-  handler          = "tweets_raw.lambda_handler"
-  runtime          = "python3.8"
+  filename      = "../lambdas/tweets_raw.zip"
+  function_name = "tweets_raw"
+  role          = "arn:aws:iam::${var.account_id}:role/LabRole"
+  handler       = "tweets_raw.lambda_handler"
+  runtime       = "python3.8"
   vpc_config {
     subnet_ids         = [var.private_subnet_id]
     security_group_ids = [var.lambda_sg]
@@ -27,7 +46,7 @@ resource "aws_lambda_function" "consult_db" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "consult_db.lambda_handler"
   runtime       = "python3.8"
-    vpc_config {
+  vpc_config {
     subnet_ids         = [var.private_subnet_id]
     security_group_ids = [var.lambda_sg]
   }
@@ -45,7 +64,7 @@ resource "aws_lambda_function" "add_tweet" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "add_tweet.lambda_handler"
   runtime       = "python3.8"
-    vpc_config {
+  vpc_config {
     subnet_ids         = [var.private_subnet_id]
     security_group_ids = [var.lambda_sg]
   }
@@ -63,7 +82,7 @@ resource "aws_lambda_function" "update_db" {
   role          = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler       = "update_db.lambda_handler"
   runtime       = "python3.8"
-    vpc_config {
+  vpc_config {
     subnet_ids         = [var.private_subnet_id]
     security_group_ids = [var.lambda_sg]
   }
@@ -72,6 +91,14 @@ resource "aws_lambda_function" "update_db" {
 # API definition
 resource "aws_api_gateway_rest_api" "sentimental_api" {
   name = "sentimental-analysis-api-gw"
+}
+
+# Authorizer
+resource "aws_api_gateway_authorizer" "api_authorizer" {
+  name          = "CognitoUserPoolAuthorizer"
+  type          = "COGNITO_USER_POOLS"
+  rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
+  provider_arns = [aws_cognito_user_pool.user_pool.arn]
 }
 
 # GET /tweets_raw endpoint
@@ -84,8 +111,9 @@ resource "aws_api_gateway_method" "tweets_raw" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.tweets_raw.id
   http_method   = "GET"
-  authorization = "NONE"
-  depends_on = [ aws_api_gateway_resource.tweets_raw ]
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
+  depends_on    = [aws_api_gateway_resource.tweets_raw]
 }
 resource "aws_api_gateway_integration" "tweets_raw" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
@@ -114,7 +142,8 @@ resource "aws_api_gateway_method" "consult_db" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.consult_db.id
   http_method   = "GET"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
 }
 resource "aws_api_gateway_integration" "consult_db" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
@@ -142,7 +171,8 @@ resource "aws_api_gateway_method" "add_tweet" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.add_tweet.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
 }
 resource "aws_api_gateway_integration" "add_tweet" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
@@ -170,7 +200,8 @@ resource "aws_api_gateway_method" "update_db" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.update_db.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
 }
 resource "aws_api_gateway_integration" "update_db" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
