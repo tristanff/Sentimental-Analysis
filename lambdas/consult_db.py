@@ -1,48 +1,69 @@
 import json
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'tweets-processed'
+table_name = 'tweets-raw'
 
 def lambda_handler(event, context):
     try:
-        # Charger le corps JSON en un dictionnaire Python
-        body = json.loads(event['body'])
+        query_parameters = event.get('queryStringParameters', {})
+        subject = query_parameters.get('subject')
+        id_value = query_parameters.get('id')
+        user = query_parameters.get('user')
+        text = query_parameters.get('text')
 
-        # Accéder à la clé 'word' dans le corps JSON
-        word = body['word']
-
-        if not word:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "The 'word' parameter is required"})
-            }
-
-        # Accéder à la table DynamoDB
         table = dynamodb.Table(table_name)
 
-        # Effectuer un scan avec une condition de filtre basée sur 'word'
-        response = table.scan(
-            FilterExpression=Attr('text').contains(word)
-        )
+        # Determine the appropriate query method based on the provided parameters
+        if subject and id_value:
+            # Query by subject and id (assuming subject is the partition key and id is the sort key)
+            response = table.query(
+                KeyConditionExpression=Key('subject').eq(subject) & Key('id').eq(id_value)
+            )
+            items = response.get('Items', [])
+        elif subject:
+            # Query by subject only (assuming subject is the partition key)
+            response = table.query(
+                KeyConditionExpression=Key('subject').eq(subject)
+            )
+            items = response.get('Items', [])
+        elif user:
+            # Scan by user attribute
+            response = table.scan(
+                FilterExpression=Attr('user').eq(user)
+            )
+            items = response.get('Items', [])
+        elif text:
+            # Scan by text attribute
+            response = table.scan(
+                FilterExpression=Attr('text').contains(text)
+            )
+            items = response.get('Items', [])
+        else:
+            # No specific query parameter provided
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"error": "At least one query parameter must be provided"})
+            }
 
-        # Obtenir les éléments de la réponse
-        items = response.get('Items', [])
+        # Filter items by all specified attributes if more than one attribute is provided
+        if len(query_parameters) > 1:
+            filtered_items = items
+            if id_value:
+                filtered_items = [item for item in filtered_items if item.get('id') == id_value]
+            if user:
+                filtered_items = [item for item in filtered_items if item.get('user') == user]
+            if text:
+                filtered_items = [item for item in filtered_items if text in item.get('text', '')]
+        else:
+            filtered_items = items
 
-        # Retourner les éléments au format JSON
         return {
             "statusCode": 200,
-            "body": json.dumps({"results": items})
-        }
-    except KeyError as e:
-        # Gérer KeyError si la clé 'word' est manquante
-        return {
-            "statusCode": 400,
-            "body": json.dumps({"error": "Missing 'word' key in request body"})
+            "body": json.dumps({"results": filtered_items})
         }
     except Exception as e:
-        # Retourner un message d'erreur si quelque chose ne va pas
         return {
             "statusCode": 500,
             "body": json.dumps({"error": str(e)})
