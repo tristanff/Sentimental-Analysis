@@ -3,8 +3,8 @@ module "dynamodb_table" {
   for_each     = toset(var.table_names)
   name         = each.key
   billing_mode = var.db_billing_mode
-  hash_key     = "id"
-  range_key    = "subject"
+  hash_key     = "subject"
+  range_key    = "id"
   attributes = [
     {
       name = "id"
