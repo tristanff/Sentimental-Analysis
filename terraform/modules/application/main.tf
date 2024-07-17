@@ -141,8 +141,7 @@ resource "aws_api_gateway_method" "tweets_raw" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.tweets_raw.id
   http_method   = "GET"
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
+  authorization = "NONE"
   depends_on    = [aws_api_gateway_resource.tweets_raw]
 }
 resource "aws_api_gateway_integration" "tweets_raw" {
@@ -230,8 +229,7 @@ resource "aws_api_gateway_method" "update_db" {
   rest_api_id   = aws_api_gateway_rest_api.sentimental_api.id
   resource_id   = aws_api_gateway_resource.update_db.id
   http_method   = "POST"
-  authorization = "COGNITO_USER_POOLS"
-  authorizer_id = aws_api_gateway_authorizer.api_authorizer.id
+  authorization = "NONE"
 }
 resource "aws_api_gateway_integration" "update_db" {
   rest_api_id             = aws_api_gateway_rest_api.sentimental_api.id
@@ -252,14 +250,6 @@ resource "aws_lambda_permission" "update_db" {
 # Deployment definition
 resource "aws_api_gateway_deployment" "sentimental_api" {
   rest_api_id = aws_api_gateway_rest_api.sentimental_api.id
-  triggers = {
-    redeployment = sha1(jsonencode([
-      aws_api_gateway_method.tweets_raw, aws_api_gateway_integration.tweets_raw, aws_api_gateway_resource.tweets_raw,
-      aws_api_gateway_method.consult_db, aws_api_gateway_integration.consult_db, aws_api_gateway_resource.consult_db,
-      aws_api_gateway_method.add_tweet, aws_api_gateway_integration.add_tweet, aws_api_gateway_resource.add_tweet,
-      aws_api_gateway_method.update_db, aws_api_gateway_integration.update_db, aws_api_gateway_resource.update_db
-    ]))
-  }
 
   lifecycle {
     create_before_destroy = true
