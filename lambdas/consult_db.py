@@ -3,7 +3,7 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb')
-table_name = 'tweets-raw'
+table_name = 'tweets-processed'
 
 def lambda_handler(event, context):
     try:
